@@ -30,6 +30,10 @@ import Data.Function (on)
 --c5
 import Data.ByteString.Char8 (unpack)
 
+--c6
+import Data.Bits (popCount)
+import Data.Char (digitToInt)
+
 --c1
 toHex :: String -> ByteString
 toHex = fst . decode . pack
@@ -102,3 +106,10 @@ repKeyXOR = fst . decode .: xor
 
 repKeyXOR' :: String -> String -> String
 repKeyXOR' = unpack .: repKeyXOR .- pack .- pack
+
+--c6
+hammingdist :: ByteString -> ByteString -> Int
+hammingdist = sum . map (popCount . digitToInt) . unpack .: xor
+
+hammingdist' :: String -> String -> Int
+hammingdist' = hammingdist .- pack .- pack
