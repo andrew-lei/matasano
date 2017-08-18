@@ -27,6 +27,9 @@ import Data.Function (on)
 --c4
 --no new libraries for c4
 
+--c5
+import Data.ByteString.Char8 (unpack)
+
 --c1
 toHex :: String -> ByteString
 toHex = fst . decode . pack
@@ -92,3 +95,10 @@ highscore = snd . head . scoreAndSort
 
 --c4
 --no new functions for c4
+
+--c5
+repKeyXOR :: ByteString -> ByteString -> ByteString
+repKeyXOR = fst . decode .: xor
+
+repKeyXOR' :: String -> String -> String
+repKeyXOR' = unpack .: repKeyXOR .- pack .- pack
