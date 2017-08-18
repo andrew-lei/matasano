@@ -24,6 +24,9 @@ import Data.Word (Word8)
 
 import Data.Function (on)
 
+--c4
+--no new libraries for c4
+
 --c1
 toHex :: String -> ByteString
 toHex = fst . decode . pack
@@ -79,10 +82,13 @@ xor256 = flip map [0..255] . flip xor1
 score :: ByteString -> (Int, ByteString)
 score = mapAccumL (\acc w -> (acc + w8scorer w, w)) 0
 
-scoreAndSort :: ByteString -> [(Int, ByteString)]
-scoreAndSort = sortBy likelier . map score . xor256
+scoreAndSort :: [ByteString] -> [(Int, ByteString)]
+scoreAndSort = sortBy likelier . map score
   where
     likelier = flip compare `on` fst
 
-highscore :: ByteString -> ByteString
+highscore :: [ByteString] -> ByteString
 highscore = snd . head . scoreAndSort
+
+--c4
+--no new functions for c4

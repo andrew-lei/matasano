@@ -2,9 +2,9 @@ import S1 (highscore, toHex, xor256)
 
 import Data.ByteString.Char8 (unpack)
 
-main = readFile "3.txt"
-  >>= putStrLn
+main = readFile "4.txt"
+  >>= putStr
   <$> unpack
   <$> highscore
-  <$> xor256
-  <$> toHex
+  <$> map (highscore . xor256 . toHex)
+  <$> lines
