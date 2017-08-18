@@ -35,8 +35,8 @@ import Data.Bits (popCount)
 import Data.Char (digitToInt)
 
 --c1
-toHex :: String -> ByteString
-toHex = fst . decode . pack
+fromHex :: String -> ByteString
+fromHex = fst . decode . pack
 
 --c2
 infixl 8 .:
