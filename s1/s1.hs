@@ -1,5 +1,5 @@
 module S1 where
-import Prelude hiding (cycle)
+import Prelude hiding (concat, cycle, null, splitAt)
 
 --c1
 import Data.ByteString (ByteString)
@@ -33,9 +33,14 @@ import Data.Bits (popCount)
 import Data.Char (digitToInt)
 
 import qualified Data.ByteString.Base64 as B64 (decode)
-import qualified Data.ByteString as BS (take, drop)
+import Data.ByteString (append, cons, concat, empty, null, splitAt, transpose)
 
 import Control.Monad (liftM2)
+
+import Data.Ord (comparing)
+import Data.List (minimumBy)
+
+import qualified Data.ByteString as BS (head, reverse)
 
 --c1
 fromHex :: String -> ByteString
@@ -104,11 +109,8 @@ highscore = snd . head . scoreAndSort
 --no new functions for c4
 
 --c5
-repKeyXOR :: ByteString -> ByteString -> ByteString
-repKeyXOR = xor
-
 repKeyXOR' :: String -> String -> String
-repKeyXOR' = unpack .: repKeyXOR .- pack .- pack
+repKeyXOR' = unpack .: xor .- pack .- pack
 
 --c6
 hammingdist :: Integral a => ByteString -> ByteString -> a
@@ -131,15 +133,20 @@ sample size nsamples = helper nsamples []
     helper :: Integral a => a -> [ByteString] -> ByteString -> [ByteString]
     helper 0          acc text = acc
     helper remSamples acc text = helper (remSamples - 1)
-                                        (BS.take size text : acc)
-                                        (BS.drop size text)
+                                        (nextBlock : acc)
+                                        rest
+      where
+        (nextBlock, rest) = splitAt size text
 
 infixl 8 .::
 (.::) = (.) . (.:)
 -- (.) . (.) . (.)
 
+getPairs :: Ord a => [a] -> [(a,a)]
+getPairs list = [ (a, b) | a <- list, b <- list, a < b ]
+
 xorblocks :: Integral a => Int -> a -> ByteString -> [ByteString]
-xorblocks =  map (uncurry xor) . (\l -> [ (a, b) | a <- l, b <- l, a < b ]) .:: sample
+xorblocks =  map (uncurry xor) . getPairs .:: sample
 
 blockHD :: (Integral a, Floating b) => Int -> a -> ByteString -> b
 blockHD size = mean . map normHD . getPairs .: (sample size)
@@ -150,8 +157,38 @@ blockHD size = mean . map normHD . getPairs .: (sample size)
     normHD :: Floating b => (ByteString, ByteString) -> b
     normHD = (/size') . fromIntegral . uncurry hammingdist
 
-    getPairs :: Ord c => [c] -> [(c,c)]
-    getPairs list = [ (a, b) | a <- list, b <- list, a < b ]
-
     mean :: Floating b => [b] -> b
     mean = liftM2 (/) sum (fromIntegral . length)
+
+
+bestCand :: Integral a => Int -> Int -> a -> ByteString -> Int
+bestCand lo hi nsamples text = getMin . map aveHD $ [lo..hi]
+  where
+    aveHD :: Floating b => Int -> (Int, b)
+    aveHD i = (i, blockHD i nsamples text)
+
+    getMin :: Ord b => [(a,b)] -> a
+    getMin = fst . minimumBy (comparing snd)
+
+nBlocks :: Int -> ByteString -> [ByteString]
+nBlocks = reverse .: helper []
+  where
+    helper acc n text
+      | null text = acc
+      | otherwise = helper (nextBlock : acc) n rest
+      where
+        (nextBlock, rest) = splitAt n text
+
+bin :: Int -> ByteString -> [ByteString]
+bin = transpose .: nBlocks
+
+unbin :: [ByteString] -> ByteString
+unbin = concat . transpose
+
+nSolveRepXOR :: Int -> ByteString -> ByteString
+nSolveRepXOR = unbin . map (highscore . xor256).: bin
+
+solveRepXOR :: Integral a => Int -> Int -> a-> ByteString -> ByteString
+solveRepXOR lo hi nsamples text = nSolveRepXOR bestCand' text
+  where
+    bestCand' = bestCand lo hi nsamples text
