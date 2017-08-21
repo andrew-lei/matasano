@@ -42,6 +42,9 @@ import Data.List (minimumBy)
 
 import qualified Data.ByteString as BS (head, reverse)
 
+--c7
+--no new libraries for c4
+
 --c1
 fromHex :: String -> ByteString
 fromHex = fst . decode . pack
@@ -192,3 +195,6 @@ solveRepXOR :: Integral a => Int -> Int -> a-> ByteString -> ByteString
 solveRepXOR lo hi nsamples text = nSolveRepXOR bestCand' text
   where
     bestCand' = bestCand lo hi nsamples text
+
+--c7
+--no new functions for c7
