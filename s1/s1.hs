@@ -198,3 +198,13 @@ solveRepXOR lo hi nsamples text = nSolveRepXOR bestCand' text
 
 --c7
 --no new functions for c7
+
+--c8
+same :: Eq a => [a] -> Bool
+same (x:xs) = helper x xs
+  where
+    helper :: Eq a => a -> [a] -> Bool
+    helper _ [] = False
+    helper x xs@(next:rest)
+      | x `elem` xs = True
+      | otherwise   = helper next rest
